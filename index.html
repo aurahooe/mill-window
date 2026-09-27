@@ -1,15 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mill Window</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mill Window</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--paper:#efe4cf;--paper-2:#f7eedc;--ink:#1b1410;--ink-soft:#5a4a3c;--rule:#c9b59a;--copper:#b25a2b;--copper-deep:#8a3e1b;--moss:#3d5340;--shadow:0 18px 50px rgba(40,22,8,.18)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:radial-gradient(1200px 500px at 10% -10%,rgba(178,90,43,.12),transparent 50%),radial-gradient(900px 400px at 110% 0,rgba(61,83,64,.08),transparent 45%),repeating-linear-gradient(0deg,transparent,transparent 23px,rgba(27,20,16,.03) 24px),var(--paper)}
+body::before{content:"";pointer-events:none;position:fixed;inset:0;opacity:.18;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");mix-blend-mode:multiply;z-index:40}
+.wrap{width:min(1080px,calc(100% - 32px));margin:0 auto;padding-bottom:80px}
+header.mast{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:16px;padding:28px 0 18px;border-bottom:2px solid var(--ink);animation:drop .8s cubic-bezier(.2,.8,.2,1) both}
+.kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+.brand{text-align:center}.brand h1{font-family:Newsreader,Georgia,serif;font-size:clamp(42px,8vw,84px);line-height:.85;margin:6px 0 0}
+.brand h1 span{color:var(--copper);font-style:italic;font-weight:400}
+nav.top{display:flex;gap:14px;justify-content:flex-end;align-items:center;font-size:14px}
+nav.top button,.ghost{background:none;border:0;padding:0;font:inherit;cursor:pointer;color:inherit;border-bottom:1px solid transparent}
+nav.top button:hover,.ghost:hover{border-bottom-color:var(--ink)}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;padding:32px 0 10px}
+.edition{background:var(--paper-2);border:1px solid var(--rule);padding:28px 30px 26px;box-shadow:var(--shadow);animation:unfold 1s cubic-bezier(.16,1,.3,1) both}
+.edition h2{font-family:Newsreader,Georgia,serif;font-size:clamp(30px,4.4vw,48px);line-height:1.05;margin:8px 0 14px}
+.edition p{font-size:17px;line-height:1.55;color:var(--ink-soft);margin:0}
+.meta{display:flex;gap:14px;align-items:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--copper-deep)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--copper);animation:pulse 1.8s ease-in-out infinite}
+.side{display:flex;flex-direction:column;justify-content:space-between;border-left:1px solid var(--rule);padding-left:24px;animation:slide .9s .15s both}
+.side h3{font-family:Newsreader,serif;font-size:22px;margin:0 0 8px}
+.countdown{font-family:Newsreader,serif;font-size:40px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:28px}
+article.card{background:rgba(247,238,220,.72);border:1px solid var(--rule);padding:20px 22px 18px;min-height:180px;display:flex;flex-direction:column;animation:rise .7s both}
+article.card h3{font-family:Newsreader,serif;font-size:24px;margin:0 0 10px}
+article.card p{margin:0;color:var(--ink-soft);line-height:1.5;flex:1;white-space:pre-wrap}
+.by{margin-top:14px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--moss)}
+.panel{margin-top:34px;border-top:2px solid var(--ink);padding-top:22px;display:none}
+.panel.on{display:block;animation:rise .5s both}
+form.stack{display:grid;gap:10px;max-width:420px}
+input,textarea{font:inherit;color:var(--ink);background:var(--paper-2);border:1px solid var(--rule);padding:10px 12px;outline:none}
+textarea{min-height:160px;resize:vertical;font-family:Newsreader,serif;font-size:18px}
+input:focus,textarea:focus{border-color:var(--copper)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--ink);color:var(--paper-2);border:0;padding:10px 16px;cursor:pointer;font:inherit}
+.btn.alt{background:var(--copper)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:14px}
+.msg{min-height:20px;font-size:13px;color:var(--copper-deep)}
+footer{margin-top:48px;border-top:1px solid var(--rule);padding-top:16px;font-size:12px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:780px){header.mast,.hero,.grid{grid-template-columns:1fr}.side{border-left:0;padding-left:0;border-top:1px solid var(--rule);padding-top:18px}nav.top{justify-content:flex-start}}
+@keyframes drop{from{opacity:0;transform:translateY(-16px)}}
+@keyframes unfold{from{opacity:0;transform:rotateX(12deg) translateY(18px)}}
+@keyframes slide{from{opacity:0;transform:translateX(16px)}}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}}
+@keyframes pulse{50%{transform:scale(1.35);opacity:.55}}
+</style>
 </head>
 <body>
-<p>placeholder replaced next</p>
-</body>
-</html>
+<div class="wrap">
+<header class="mast">
+<div class="clock" id="now">-</div>
+<div class="brand"><div class="kicker">Printed on the hour</div><h1>Mill <span>Window</span></h1></div>
+<nav class="top"><button type="button" data-open="desk">The desk</button><button type="button" data-open="gate" id="authBtn">Sign in</button></nav>
+</header>
+<section class="hero">
+<div class="edition"><div class="meta"><span class="dot"></span><span id="hourLabel">This hour</span></div>
+<h2 id="headline">The press is warming the plates.</h2>
+<p id="blurb">Every sixty minutes this window reprints - a house note, or a public page left on the desk.</p></div>
+<aside class="side"><div><h3>Next reprint</h3><div class="countdown" id="left">59:59</div><p class="kicker" style="margin-top:10px">Public pages only. Private stays in your drawer.</p></div>
+<p style="color:var(--ink-soft);line-height:1.5">Write something small. Mark it public if you want it on the street.</p></aside>
+</section>
+<h2 class="kicker" style="margin:28px 0 10px">On the street</h2>
+<div class="grid" id="street"></div>
+<section class="panel" id="gate">
+<h2 class="kicker">The gate</h2>
+<p style="max-width:520px;color:var(--ink-soft)">Email and a password. Your pages stay until you take them down.</p>
+<form class="stack" id="authForm">
+<input name="email" type="email" required placeholder="you@somewhere.com" autocomplete="email"/>
+<input name="password" type="password" required minlength="6" placeholder="password, six or more" autocomplete="current-password"/>
+<div class="row"><button class="btn" type="submit">Enter</button><button class="btn alt" type="button" id="regBtn">Make a desk</button></div>
+<div class="msg" id="authMsg"></div></form></section>
+<section class="panel" id="desk">
+<h2 class="kicker">Your desk</h2>
+<form class="stack" id="pageForm" style="max-width:none">
+<input name="title" maxlength="140" required placeholder="A title that can sit on a masthead"/>
+<textarea name="body" required maxlength="12000" placeholder="The page itself."></textarea>
+<label class="toggle"><input type="checkbox" name="is_public"/> Mark public - show it on the street</label>
+<div class="row"><button class="btn" type="submit">Save the page</button><button class="ghost" type="button" id="outBtn">Leave the building</button></div>
+<div class="msg" id="deskMsg"></div></form>
+<div class="grid" id="mine" style="margin-top:18px"></div></section>
+<footer><span>Public is public. Private is only yours.</span><span id="who">Visitor</span></footer>
+</div>
+<script>
+const SB_URL='https://tqfocdktvjuwoiyfgesb.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxZm9jZGt0dmp1d29peWZnZXNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDg0NTIsImV4cCI6MjEwNTQ4NDQ1Mn0.8TW4fQCQHc4c_xTNBEwOK3lSC9HYCbkTbfXuYQB-S8g';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+let session=null;
+const HOUSE=[['The mill still turns after the lights go.','We keep a window on the river side so the hour has somewhere to sit.'],['Ink dries slower in this weather.','A public page waits on the street. Private ones stay in the drawer.'],['Do not wait for a perfect sentence.','The plate changes on the hour whether you are ready or not.'],['Someone left the sash up.','We print whatever is facing up when the clock lands.'],['A small press, a loud clock.','We do not promise news. We promise a reprint.']];
+const hourKey=(d=new Date())=>{const x=new Date(d);x.setMinutes(0,0,0);return x.toISOString()};
+const fmt=d=>d.toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'});
+function tick(){const now=new Date();document.getElementById('now').textContent=fmt(now);const next=new Date(now);next.setHours(now.getHours()+1,0,0,0);const s=Math.max(0,Math.floor((next-now)/1000));document.getElementById('left').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function card(p,extra=''){const el=document.createElement('article');el.className='card';el.innerHTML='<h3></h3><p></p><div class="by"></div>';el.querySelector('h3').textContent=p.title;el.querySelector('p').textContent=p.body.length>420?p.body.slice(0,420)+'\u2026':p.body;el.querySelector('.by').textContent=extra||('by '+(p.handle||'unsigned'));return el}
+async function ensureAuthor(user){const handle=(user.email||'desk').split('@')[0].replace(/[^a-z0-9]+/gi,'-').slice(0,24)||'desk';await sb.from('copper_authors').upsert({id:user.id,handle,display_name:handle})}
+async function loadStreet(){const {data}=await sb.from('copper_pages').select('id,title,body,created_at,author_id,copper_authors(handle)').eq('is_public',true).order('created_at',{ascending:false}).limit(12);const street=document.getElementById('street');street.innerHTML='';if(!data||!data.length){street.appendChild(card({title:'The street is empty',body:'Sign in, write a page, mark it public.',handle:'house'}));return data||[]}data.forEach(p=>street.appendChild(card({title:p.title,body:p.body,handle:p.copper_authors&&p.copper_authors.handle})));return data}
+async function loadMine(){if(!session)return;const {data}=await sb.from('copper_pages').select('id,title,body,is_public,created_at').eq('author_id',session.user.id).order('created_at',{ascending:false});const box=document.getElementById('mine');box.innerHTML='';(data||[]).forEach(p=>box.appendChild(card(p,p.is_public?'public':'in the drawer')))}
+async function ensureHour(publicPages){const key=hourKey();document.getElementById('hourLabel').textContent='Edition \u00b7 '+fmt(new Date(key));let {data:hour}=await sb.from('copper_hours').select('*').eq('hour_key',key).maybeSingle();if(!hour){const pick=(publicPages||[]).length?publicPages[Math.floor(Math.random()*Math.min(publicPages.length,6))]:null;const house=HOUSE[new Date().getHours()%HOUSE.length];const row=pick?{hour_key:key,headline:pick.title,blurb:pick.body.slice(0,360),page_id:pick.id}:{hour_key:key,headline:house[0],blurb:house[1],page_id:null};const ins=await sb.from('copper_hours').insert(row).select().maybeSingle();hour=ins.data||row}document.getElementById('headline').textContent=hour.headline;document.getElementById('blurb').textContent=hour.blurb}
+async function refreshWho(){const who=document.getElementById('who');const btn=document.getElementById('authBtn');if(session){who.textContent=session.user.email;btn.textContent='Desk';btn.dataset.open='desk'}else{who.textContent='Visitor';btn.textContent='Sign in';btn.dataset.open='gate'}}
+document.querySelectorAll('[data-open]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));const id=btn.dataset.open;document.getElementById(id).classList.add('on');document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'})}));
+document.getElementById('authForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);const {data,error}=await sb.auth.signInWithPassword({email:fd.get('email'),password:fd.get('password')});document.getElementById('authMsg').textContent=error?error.message:"You're in.";if(!error){session=data.session;await ensureAuthor(session.user);await refreshWho();await loadMine();document.getElementById('gate').classList.remove('on');document.getElementById('desk').classList.add('on')}});
+document.getElementById('regBtn').addEventListener('click',async()=>{const fd=new FormData(document.getElementById('authForm'));const {error}=await sb.auth.signUp({email:fd.get('email'),password:fd.get('password')});document.getElementById('authMsg').textContent=error?error.message:'Desk made. Confirm email if asked, then sign in.'});
+document.getElementById('pageForm').addEventListener('submit',async e=>{e.preventDefault();if(!session){document.getElementById('deskMsg').textContent='Sign in first.';return}const fd=new FormData(e.target);const {error}=await sb.from('copper_pages').insert({author_id:session.user.id,title:String(fd.get('title')).trim(),body:String(fd.get('body')).trim(),is_public:fd.get('is_public')==='on'});document.getElementById('deskMsg').textContent=error?error.message:'Saved.';if(!error){e.target.reset();const pages=await loadStreet();await loadMine();await ensureHour(pages)}});
+document.getElementById('outBtn').addEventListener('click',async()=>{await sb.auth.signOut();session=null;await refreshWho();document.getElementById('desk').classList.remove('on');document.getElementById('mine').innerHTML=''});
+async function boot(){tick();setInterval(tick,1000);const {data}=await sb.auth.getSession();session=data.session;if(session)await ensureAuthor(session.user);await refreshWho();const pages=await loadStreet();await ensureHour(pages);await loadMine();sb.auth.onAuthStateChange((e,s)=>{session=s;refreshWho()})}
+boot();
+</script>
+</body></html>
